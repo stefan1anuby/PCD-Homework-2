@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>📊 Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background: #f7f7f7;
+        }
+
+        h1 {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-gap: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 Message Analytics Dashboard</h1>
+
+    <div class="grid">
+        <!-- Top Users Chart -->
+        <div class="card">
+            <h2>Top 5 Users (label = true)</h2>
+            <canvas id="topUsersChart"></canvas>
+        </div>
+
+        <!-- Timeline Chart -->
+        <div class="card">
+            <h2>Messages Over Time</h2>
+            <canvas id="timelineChart"></canvas>
+        </div>
+
+        <!-- Most Frequent Words Chart -->
+        <div class="card" style="grid-column: span 2;">
+            <h2>Most Frequent Words</h2>
+            <canvas id="wordsChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Top Users
+        new Chart(document.getElementById('topUsersChart'), {
+            type: 'bar',
+            data: {
+                labels: {{ top_users | map(attribute='author') | list | tojson }},
+                datasets: [{
+                    label: 'Messages',
+                    data: {{ top_users | map(attribute='count') | list | tojson }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Top 5 Users' }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Timeline
+        new Chart(document.getElementById('timelineChart'), {
+            type: 'line',
+            data: {
+                labels: {{ timeline | map(attribute='date') | list | tojson }},
+                datasets: [{
+                    label: 'Messages/Day',
+                    data: {{ timeline | map(attribute='count') | list | tojson }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Frequent Words
+        new Chart(document.getElementById('wordsChart'), {
+            type: 'bar',
+            data: {
+                labels: {{ common_words | map(attribute=0) | list | tojson }},
+                datasets: [{
+                    label: 'Word Frequency',
+                    data: {{ common_words | map(attribute=1) | list | tojson }},
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Top 10 Most Frequent Words' }
+                },
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
