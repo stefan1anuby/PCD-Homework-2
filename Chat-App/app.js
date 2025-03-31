@@ -16,6 +16,9 @@ const pool = new Pool({
   database: process.env.PGDATABASE,
   password: process.env.PGPASSWORD,
   port: process.env.PGPORT,
+  max: 25,             // 🔹 max number of clients in the pool
+  idleTimeoutMillis: 30000, // 🔹 close idle clients after 30s
+  connectionTimeoutMillis: 5000 // 🔹 timeout for connection attempts
 });
 
 // Google Pub/Sub setup
