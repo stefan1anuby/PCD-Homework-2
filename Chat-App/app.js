@@ -22,10 +22,16 @@ const pool = new Pool({
 const pubsub = new PubSub({ keyFilename: 'service-account.json' });
 const topicName = 'projects/pcd-homework-2-455019/topics/eventarc-us-central1-trigger-vhayytoa-860';
 
+
 // Serve HTML page
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
+
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 
 // Socket.io connection
 io.on('connection', async function (socket) {
@@ -48,6 +54,8 @@ io.on('connection', async function (socket) {
 
   socket.on('chat message', async function (author, message, label) {
     try {
+
+      await pool.query('INSERT INTO messages(author, message) VALUES($1, $2)', [author, message]);
       // Publish message to Pub/Sub
       const messagePayload = { author, text: message, label };
       console.log('Message payload:', messagePayload);
@@ -57,10 +65,16 @@ io.on('connection', async function (socket) {
 
       console.log(`Message sent to Pub/Sub: ${author}: ${message}`);
     } catch (err) {
-      console.error('Error publishing to Pub/Sub:', err);
+      console.error('Error insert message:', err);
     }
+    io.emit('chat message', author, message);
   });
 
 });
 
+
+// Start server
+http.listen(port, function () {
+  console.log('Listening on *:' + port);
+});
 
