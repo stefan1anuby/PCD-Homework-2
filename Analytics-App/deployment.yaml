@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-app
+  template:
+    metadata:
+      labels:
+        app: analytics-app
+    spec:
+      containers:
+        - name: analytics-app
+          image: analytics-app
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: service-account-key
+              mountPath: /app/service-account-key.json
+              subPath: service-account-key.json
+      volumes:
+        - name: service-account-key
+          secret:
+            secretName: service-account-key
